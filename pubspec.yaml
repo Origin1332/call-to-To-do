@@ -36,6 +36,9 @@ dependencies:
   intl: ^0.20.3
   cupertino_icons: ^1.0.8
 
+  # 수집 중복 제거 키(본문을 복원할 수 없는 해시)
+  crypto: ^3.0.6
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

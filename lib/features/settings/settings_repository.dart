@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/database.dart';
+import '../capture/capture_settings.dart';
 import '../extraction/gemini_extractor.dart';
 
 /// 앱 설정 저장소.
@@ -61,4 +62,25 @@ class SettingsRepository {
     geminiModelKey,
     model.trim().isEmpty ? GeminiExtractor.defaultModel : model.trim(),
   );
+
+  // ---- 수집 (3단계) -------------------------------------------------------
+
+  Future<CaptureSettings> readCaptureSettings() async {
+    final map = <String, String?>{
+      for (final key in CaptureSettings.keys) key: await _db.readSetting(key),
+    };
+    return CaptureSettings.fromMap(map);
+  }
+
+  Stream<CaptureSettings> watchCaptureSettings() =>
+      _db.watchSettings(CaptureSettings.keys).map(CaptureSettings.fromMap);
+
+  /// 키 4개를 한 트랜잭션에 써서 구독자가 중간 상태를 보지 않게 한다.
+  Future<void> writeCaptureSettings(CaptureSettings settings) {
+    return _db.transaction(() async {
+      for (final entry in settings.toMap().entries) {
+        await _db.writeSetting(entry.key, entry.value);
+      }
+    });
+  }
 }

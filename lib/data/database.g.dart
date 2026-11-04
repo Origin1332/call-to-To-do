@@ -1419,12 +1419,637 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $CaptureLogTable extends CaptureLog
+    with TableInfo<$CaptureLogTable, CaptureLogData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CaptureLogTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceAppMeta = const VerificationMeta(
+    'sourceApp',
+  );
+  @override
+  late final GeneratedColumn<String> sourceApp = GeneratedColumn<String>(
+    'source_app',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _messageAtMeta = const VerificationMeta(
+    'messageAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> messageAt = GeneratedColumn<DateTime>(
+    'message_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _processedAtMeta = const VerificationMeta(
+    'processedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> processedAt = GeneratedColumn<DateTime>(
+    'processed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _candidateCountMeta = const VerificationMeta(
+    'candidateCount',
+  );
+  @override
+  late final GeneratedColumn<int> candidateCount = GeneratedColumn<int>(
+    'candidate_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _candidateIdsMeta = const VerificationMeta(
+    'candidateIds',
+  );
+  @override
+  late final GeneratedColumn<String> candidateIds = GeneratedColumn<String>(
+    'candidate_ids',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _textLengthMeta = const VerificationMeta(
+    'textLength',
+  );
+  @override
+  late final GeneratedColumn<int> textLength = GeneratedColumn<int>(
+    'text_length',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _dedupeKeyMeta = const VerificationMeta(
+    'dedupeKey',
+  );
+  @override
+  late final GeneratedColumn<String> dedupeKey = GeneratedColumn<String>(
+    'dedupe_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    source,
+    sourceApp,
+    messageAt,
+    processedAt,
+    status,
+    candidateCount,
+    candidateIds,
+    textLength,
+    dedupeKey,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'capture_log';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CaptureLogData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('source_app')) {
+      context.handle(
+        _sourceAppMeta,
+        sourceApp.isAcceptableOrUnknown(data['source_app']!, _sourceAppMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceAppMeta);
+    }
+    if (data.containsKey('message_at')) {
+      context.handle(
+        _messageAtMeta,
+        messageAt.isAcceptableOrUnknown(data['message_at']!, _messageAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_messageAtMeta);
+    }
+    if (data.containsKey('processed_at')) {
+      context.handle(
+        _processedAtMeta,
+        processedAt.isAcceptableOrUnknown(
+          data['processed_at']!,
+          _processedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_processedAtMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('candidate_count')) {
+      context.handle(
+        _candidateCountMeta,
+        candidateCount.isAcceptableOrUnknown(
+          data['candidate_count']!,
+          _candidateCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('candidate_ids')) {
+      context.handle(
+        _candidateIdsMeta,
+        candidateIds.isAcceptableOrUnknown(
+          data['candidate_ids']!,
+          _candidateIdsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('text_length')) {
+      context.handle(
+        _textLengthMeta,
+        textLength.isAcceptableOrUnknown(data['text_length']!, _textLengthMeta),
+      );
+    }
+    if (data.containsKey('dedupe_key')) {
+      context.handle(
+        _dedupeKeyMeta,
+        dedupeKey.isAcceptableOrUnknown(data['dedupe_key']!, _dedupeKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dedupeKeyMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CaptureLogData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CaptureLogData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      sourceApp: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_app'],
+      )!,
+      messageAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}message_at'],
+      )!,
+      processedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}processed_at'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      candidateCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}candidate_count'],
+      )!,
+      candidateIds: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}candidate_ids'],
+      ),
+      textLength: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}text_length'],
+      )!,
+      dedupeKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dedupe_key'],
+      )!,
+    );
+  }
+
+  @override
+  $CaptureLogTable createAlias(String alias) {
+    return $CaptureLogTable(attachedDatabase, alias);
+  }
+}
+
+class CaptureLogData extends DataClass implements Insertable<CaptureLogData> {
+  final int id;
+
+  /// `notification` | `sms`
+  final String source;
+
+  /// 패키지 이름(알림) 또는 `sms`(옵저버).
+  final String sourceApp;
+
+  /// 메시지 시각(알림 게시·SMS 수신).
+  final DateTime messageAt;
+
+  /// 파이프라인이 처리한 시각.
+  final DateTime processedAt;
+
+  /// `processed` | `duplicate` | `disabled` | `empty` | `error`
+  final String status;
+  final int candidateCount;
+
+  /// 만들어진 후보 ID 들 (`,` 구분). 없으면 null.
+  final String? candidateIds;
+
+  /// 본문 글자 수(본문 자체가 아님).
+  final int textLength;
+
+  /// 중복 판정용 해시. 본문을 복원할 수 없다.
+  final String dedupeKey;
+  const CaptureLogData({
+    required this.id,
+    required this.source,
+    required this.sourceApp,
+    required this.messageAt,
+    required this.processedAt,
+    required this.status,
+    required this.candidateCount,
+    this.candidateIds,
+    required this.textLength,
+    required this.dedupeKey,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['source'] = Variable<String>(source);
+    map['source_app'] = Variable<String>(sourceApp);
+    map['message_at'] = Variable<DateTime>(messageAt);
+    map['processed_at'] = Variable<DateTime>(processedAt);
+    map['status'] = Variable<String>(status);
+    map['candidate_count'] = Variable<int>(candidateCount);
+    if (!nullToAbsent || candidateIds != null) {
+      map['candidate_ids'] = Variable<String>(candidateIds);
+    }
+    map['text_length'] = Variable<int>(textLength);
+    map['dedupe_key'] = Variable<String>(dedupeKey);
+    return map;
+  }
+
+  CaptureLogCompanion toCompanion(bool nullToAbsent) {
+    return CaptureLogCompanion(
+      id: Value(id),
+      source: Value(source),
+      sourceApp: Value(sourceApp),
+      messageAt: Value(messageAt),
+      processedAt: Value(processedAt),
+      status: Value(status),
+      candidateCount: Value(candidateCount),
+      candidateIds: candidateIds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(candidateIds),
+      textLength: Value(textLength),
+      dedupeKey: Value(dedupeKey),
+    );
+  }
+
+  factory CaptureLogData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CaptureLogData(
+      id: serializer.fromJson<int>(json['id']),
+      source: serializer.fromJson<String>(json['source']),
+      sourceApp: serializer.fromJson<String>(json['sourceApp']),
+      messageAt: serializer.fromJson<DateTime>(json['messageAt']),
+      processedAt: serializer.fromJson<DateTime>(json['processedAt']),
+      status: serializer.fromJson<String>(json['status']),
+      candidateCount: serializer.fromJson<int>(json['candidateCount']),
+      candidateIds: serializer.fromJson<String?>(json['candidateIds']),
+      textLength: serializer.fromJson<int>(json['textLength']),
+      dedupeKey: serializer.fromJson<String>(json['dedupeKey']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'source': serializer.toJson<String>(source),
+      'sourceApp': serializer.toJson<String>(sourceApp),
+      'messageAt': serializer.toJson<DateTime>(messageAt),
+      'processedAt': serializer.toJson<DateTime>(processedAt),
+      'status': serializer.toJson<String>(status),
+      'candidateCount': serializer.toJson<int>(candidateCount),
+      'candidateIds': serializer.toJson<String?>(candidateIds),
+      'textLength': serializer.toJson<int>(textLength),
+      'dedupeKey': serializer.toJson<String>(dedupeKey),
+    };
+  }
+
+  CaptureLogData copyWith({
+    int? id,
+    String? source,
+    String? sourceApp,
+    DateTime? messageAt,
+    DateTime? processedAt,
+    String? status,
+    int? candidateCount,
+    Value<String?> candidateIds = const Value.absent(),
+    int? textLength,
+    String? dedupeKey,
+  }) => CaptureLogData(
+    id: id ?? this.id,
+    source: source ?? this.source,
+    sourceApp: sourceApp ?? this.sourceApp,
+    messageAt: messageAt ?? this.messageAt,
+    processedAt: processedAt ?? this.processedAt,
+    status: status ?? this.status,
+    candidateCount: candidateCount ?? this.candidateCount,
+    candidateIds: candidateIds.present ? candidateIds.value : this.candidateIds,
+    textLength: textLength ?? this.textLength,
+    dedupeKey: dedupeKey ?? this.dedupeKey,
+  );
+  CaptureLogData copyWithCompanion(CaptureLogCompanion data) {
+    return CaptureLogData(
+      id: data.id.present ? data.id.value : this.id,
+      source: data.source.present ? data.source.value : this.source,
+      sourceApp: data.sourceApp.present ? data.sourceApp.value : this.sourceApp,
+      messageAt: data.messageAt.present ? data.messageAt.value : this.messageAt,
+      processedAt: data.processedAt.present
+          ? data.processedAt.value
+          : this.processedAt,
+      status: data.status.present ? data.status.value : this.status,
+      candidateCount: data.candidateCount.present
+          ? data.candidateCount.value
+          : this.candidateCount,
+      candidateIds: data.candidateIds.present
+          ? data.candidateIds.value
+          : this.candidateIds,
+      textLength: data.textLength.present
+          ? data.textLength.value
+          : this.textLength,
+      dedupeKey: data.dedupeKey.present ? data.dedupeKey.value : this.dedupeKey,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CaptureLogData(')
+          ..write('id: $id, ')
+          ..write('source: $source, ')
+          ..write('sourceApp: $sourceApp, ')
+          ..write('messageAt: $messageAt, ')
+          ..write('processedAt: $processedAt, ')
+          ..write('status: $status, ')
+          ..write('candidateCount: $candidateCount, ')
+          ..write('candidateIds: $candidateIds, ')
+          ..write('textLength: $textLength, ')
+          ..write('dedupeKey: $dedupeKey')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    source,
+    sourceApp,
+    messageAt,
+    processedAt,
+    status,
+    candidateCount,
+    candidateIds,
+    textLength,
+    dedupeKey,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CaptureLogData &&
+          other.id == this.id &&
+          other.source == this.source &&
+          other.sourceApp == this.sourceApp &&
+          other.messageAt == this.messageAt &&
+          other.processedAt == this.processedAt &&
+          other.status == this.status &&
+          other.candidateCount == this.candidateCount &&
+          other.candidateIds == this.candidateIds &&
+          other.textLength == this.textLength &&
+          other.dedupeKey == this.dedupeKey);
+}
+
+class CaptureLogCompanion extends UpdateCompanion<CaptureLogData> {
+  final Value<int> id;
+  final Value<String> source;
+  final Value<String> sourceApp;
+  final Value<DateTime> messageAt;
+  final Value<DateTime> processedAt;
+  final Value<String> status;
+  final Value<int> candidateCount;
+  final Value<String?> candidateIds;
+  final Value<int> textLength;
+  final Value<String> dedupeKey;
+  const CaptureLogCompanion({
+    this.id = const Value.absent(),
+    this.source = const Value.absent(),
+    this.sourceApp = const Value.absent(),
+    this.messageAt = const Value.absent(),
+    this.processedAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.candidateCount = const Value.absent(),
+    this.candidateIds = const Value.absent(),
+    this.textLength = const Value.absent(),
+    this.dedupeKey = const Value.absent(),
+  });
+  CaptureLogCompanion.insert({
+    this.id = const Value.absent(),
+    required String source,
+    required String sourceApp,
+    required DateTime messageAt,
+    required DateTime processedAt,
+    required String status,
+    this.candidateCount = const Value.absent(),
+    this.candidateIds = const Value.absent(),
+    this.textLength = const Value.absent(),
+    required String dedupeKey,
+  }) : source = Value(source),
+       sourceApp = Value(sourceApp),
+       messageAt = Value(messageAt),
+       processedAt = Value(processedAt),
+       status = Value(status),
+       dedupeKey = Value(dedupeKey);
+  static Insertable<CaptureLogData> custom({
+    Expression<int>? id,
+    Expression<String>? source,
+    Expression<String>? sourceApp,
+    Expression<DateTime>? messageAt,
+    Expression<DateTime>? processedAt,
+    Expression<String>? status,
+    Expression<int>? candidateCount,
+    Expression<String>? candidateIds,
+    Expression<int>? textLength,
+    Expression<String>? dedupeKey,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (source != null) 'source': source,
+      if (sourceApp != null) 'source_app': sourceApp,
+      if (messageAt != null) 'message_at': messageAt,
+      if (processedAt != null) 'processed_at': processedAt,
+      if (status != null) 'status': status,
+      if (candidateCount != null) 'candidate_count': candidateCount,
+      if (candidateIds != null) 'candidate_ids': candidateIds,
+      if (textLength != null) 'text_length': textLength,
+      if (dedupeKey != null) 'dedupe_key': dedupeKey,
+    });
+  }
+
+  CaptureLogCompanion copyWith({
+    Value<int>? id,
+    Value<String>? source,
+    Value<String>? sourceApp,
+    Value<DateTime>? messageAt,
+    Value<DateTime>? processedAt,
+    Value<String>? status,
+    Value<int>? candidateCount,
+    Value<String?>? candidateIds,
+    Value<int>? textLength,
+    Value<String>? dedupeKey,
+  }) {
+    return CaptureLogCompanion(
+      id: id ?? this.id,
+      source: source ?? this.source,
+      sourceApp: sourceApp ?? this.sourceApp,
+      messageAt: messageAt ?? this.messageAt,
+      processedAt: processedAt ?? this.processedAt,
+      status: status ?? this.status,
+      candidateCount: candidateCount ?? this.candidateCount,
+      candidateIds: candidateIds ?? this.candidateIds,
+      textLength: textLength ?? this.textLength,
+      dedupeKey: dedupeKey ?? this.dedupeKey,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (sourceApp.present) {
+      map['source_app'] = Variable<String>(sourceApp.value);
+    }
+    if (messageAt.present) {
+      map['message_at'] = Variable<DateTime>(messageAt.value);
+    }
+    if (processedAt.present) {
+      map['processed_at'] = Variable<DateTime>(processedAt.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (candidateCount.present) {
+      map['candidate_count'] = Variable<int>(candidateCount.value);
+    }
+    if (candidateIds.present) {
+      map['candidate_ids'] = Variable<String>(candidateIds.value);
+    }
+    if (textLength.present) {
+      map['text_length'] = Variable<int>(textLength.value);
+    }
+    if (dedupeKey.present) {
+      map['dedupe_key'] = Variable<String>(dedupeKey.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CaptureLogCompanion(')
+          ..write('id: $id, ')
+          ..write('source: $source, ')
+          ..write('sourceApp: $sourceApp, ')
+          ..write('messageAt: $messageAt, ')
+          ..write('processedAt: $processedAt, ')
+          ..write('status: $status, ')
+          ..write('candidateCount: $candidateCount, ')
+          ..write('candidateIds: $candidateIds, ')
+          ..write('textLength: $textLength, ')
+          ..write('dedupeKey: $dedupeKey')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $AuditLogTable auditLog = $AuditLogTable(this);
   late final $CandidatesTable candidates = $CandidatesTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $CaptureLogTable captureLog = $CaptureLogTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1433,6 +2058,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     auditLog,
     candidates,
     settings,
+    captureLog,
   ];
 }
 
@@ -2173,6 +2799,310 @@ typedef $$SettingsTableProcessedTableManager =
       Setting,
       PrefetchHooks Function()
     >;
+typedef $$CaptureLogTableCreateCompanionBuilder = CaptureLogCompanion Function({
+  Value<int> id,
+  required String source,
+  required String sourceApp,
+  required DateTime messageAt,
+  required DateTime processedAt,
+  required String status,
+  Value<int> candidateCount,
+  Value<String?> candidateIds,
+  Value<int> textLength,
+  required String dedupeKey,
+});
+typedef $$CaptureLogTableUpdateCompanionBuilder = CaptureLogCompanion Function({
+  Value<int> id,
+  Value<String> source,
+  Value<String> sourceApp,
+  Value<DateTime> messageAt,
+  Value<DateTime> processedAt,
+  Value<String> status,
+  Value<int> candidateCount,
+  Value<String?> candidateIds,
+  Value<int> textLength,
+  Value<String> dedupeKey,
+});
+
+class $$CaptureLogTableFilterComposer
+    extends Composer<_$AppDatabase, $CaptureLogTable> {
+  $$CaptureLogTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceApp => $composableBuilder(
+    column: $table.sourceApp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get messageAt => $composableBuilder(
+    column: $table.messageAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get processedAt => $composableBuilder(
+    column: $table.processedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get candidateCount => $composableBuilder(
+    column: $table.candidateCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get candidateIds => $composableBuilder(
+    column: $table.candidateIds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get textLength => $composableBuilder(
+    column: $table.textLength,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dedupeKey => $composableBuilder(
+    column: $table.dedupeKey,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CaptureLogTableOrderingComposer
+    extends Composer<_$AppDatabase, $CaptureLogTable> {
+  $$CaptureLogTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceApp => $composableBuilder(
+    column: $table.sourceApp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get messageAt => $composableBuilder(
+    column: $table.messageAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get processedAt => $composableBuilder(
+    column: $table.processedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get candidateCount => $composableBuilder(
+    column: $table.candidateCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get candidateIds => $composableBuilder(
+    column: $table.candidateIds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get textLength => $composableBuilder(
+    column: $table.textLength,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dedupeKey => $composableBuilder(
+    column: $table.dedupeKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CaptureLogTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CaptureLogTable> {
+  $$CaptureLogTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceApp =>
+      $composableBuilder(column: $table.sourceApp, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get messageAt =>
+      $composableBuilder(column: $table.messageAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get processedAt => $composableBuilder(
+    column: $table.processedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get candidateCount => $composableBuilder(
+    column: $table.candidateCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get candidateIds => $composableBuilder(
+    column: $table.candidateIds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get textLength => $composableBuilder(
+    column: $table.textLength,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get dedupeKey =>
+      $composableBuilder(column: $table.dedupeKey, builder: (column) => column);
+}
+
+class $$CaptureLogTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CaptureLogTable,
+          CaptureLogData,
+          $$CaptureLogTableFilterComposer,
+          $$CaptureLogTableOrderingComposer,
+          $$CaptureLogTableAnnotationComposer,
+          $$CaptureLogTableCreateCompanionBuilder,
+          $$CaptureLogTableUpdateCompanionBuilder,
+          (
+            CaptureLogData,
+            BaseReferences<_$AppDatabase, $CaptureLogTable, CaptureLogData>,
+          ),
+          CaptureLogData,
+          PrefetchHooks Function()
+        > {
+  $$CaptureLogTableTableManager(_$AppDatabase db, $CaptureLogTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CaptureLogTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CaptureLogTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CaptureLogTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String> sourceApp = const Value.absent(),
+                Value<DateTime> messageAt = const Value.absent(),
+                Value<DateTime> processedAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> candidateCount = const Value.absent(),
+                Value<String?> candidateIds = const Value.absent(),
+                Value<int> textLength = const Value.absent(),
+                Value<String> dedupeKey = const Value.absent(),
+              }) => CaptureLogCompanion(
+                id: id,
+                source: source,
+                sourceApp: sourceApp,
+                messageAt: messageAt,
+                processedAt: processedAt,
+                status: status,
+                candidateCount: candidateCount,
+                candidateIds: candidateIds,
+                textLength: textLength,
+                dedupeKey: dedupeKey,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String source,
+                required String sourceApp,
+                required DateTime messageAt,
+                required DateTime processedAt,
+                required String status,
+                Value<int> candidateCount = const Value.absent(),
+                Value<String?> candidateIds = const Value.absent(),
+                Value<int> textLength = const Value.absent(),
+                required String dedupeKey,
+              }) => CaptureLogCompanion.insert(
+                id: id,
+                source: source,
+                sourceApp: sourceApp,
+                messageAt: messageAt,
+                processedAt: processedAt,
+                status: status,
+                candidateCount: candidateCount,
+                candidateIds: candidateIds,
+                textLength: textLength,
+                dedupeKey: dedupeKey,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CaptureLogTable, CaptureLogData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $CaptureLogTable,
+                    CaptureLogData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CaptureLogTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CaptureLogTable,
+      CaptureLogData,
+      $$CaptureLogTableFilterComposer,
+      $$CaptureLogTableOrderingComposer,
+      $$CaptureLogTableAnnotationComposer,
+      $$CaptureLogTableCreateCompanionBuilder,
+      $$CaptureLogTableUpdateCompanionBuilder,
+      (
+        CaptureLogData,
+        BaseReferences<_$AppDatabase, $CaptureLogTable, CaptureLogData>,
+      ),
+      CaptureLogData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2183,4 +3113,6 @@ class $AppDatabaseManager {
       $$CandidatesTableTableManager(_db, _db.candidates);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$CaptureLogTableTableManager get captureLog =>
+      $$CaptureLogTableTableManager(_db, _db.captureLog);
 }

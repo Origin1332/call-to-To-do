@@ -52,5 +52,7 @@ dependencies {
     // Pigeon @async 호스트 API 가 suspend 함수로 생성되므로 코루틴이 필요하다.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("androidx.core:core-ktx:1.17.0")
+    // 3단계: 수집기 → Dart 파이프라인 사이의 영속 큐 (capture/CaptureDispatcher, CaptureWorker).
+    implementation("androidx.work:work-runtime-ktx:2.10.5")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
