@@ -98,7 +98,7 @@ class CalendarHostApiImpl(private val activity: Activity) : CalendarHostApi {
             if (rrule != null) {
                 // 반복 이벤트는 DTEND 대신 DURATION 을 써야 한다 (CalendarContract 규칙).
                 put(CalendarContract.Events.RRULE, rrule)
-                put(CalendarContract.Events.DURATION, toRfc2445Duration(event, rrule))
+                put(CalendarContract.Events.DURATION, toRfc2445Duration(event))
             } else {
                 put(CalendarContract.Events.DTEND, event.endMillis)
             }
@@ -108,7 +108,7 @@ class CalendarHostApiImpl(private val activity: Activity) : CalendarHostApi {
         return ContentUris.parseId(uri).toString()
     }
 
-    private fun toRfc2445Duration(event: CalendarEventInput, rrule: String): String {
+    private fun toRfc2445Duration(event: CalendarEventInput): String {
         val seconds = ((event.endMillis - event.startMillis) / 1000).coerceAtLeast(0)
         return if (event.allDay) "P${(seconds / 86_400).coerceAtLeast(1)}D" else "PT${seconds}S"
     }
