@@ -10,9 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:meta/meta.dart' show immutable, protected, visibleForTesting;
 
 Object? _extractReplyValueOrThrow(
-  List<Object?>? replyList,
-  String channelName, {
-  required bool isNullValid,
+    List<Object?>? replyList,
+    String channelName, {
+    required bool isNullValid,
 }) {
   if (replyList == null) {
     throw PlatformException(
@@ -46,9 +46,8 @@ bool _deepEquals(Object? a, Object? b) {
   }
   if (a is List && b is List) {
     return a.length == b.length &&
-        a.indexed.every(
-          ((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]),
-        );
+        a.indexed
+            .every(((int, dynamic) item) => _deepEquals(item.$2, b[item.$1]));
   }
   if (a is Map && b is Map) {
     if (a.length != b.length) {
@@ -97,6 +96,7 @@ int _deepHash(Object? value) {
   return value.hashCode;
 }
 
+
 /// 기기에 등록된, 쓰기 가능한 캘린더 하나 (CalendarContract.Calendars).
 class DeviceCalendar {
   DeviceCalendar({
@@ -132,8 +132,7 @@ class DeviceCalendar {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static DeviceCalendar decode(Object result) {
     result as List<Object?>;
@@ -156,12 +155,7 @@ class DeviceCalendar {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(id, other.id) &&
-        _deepEquals(displayName, other.displayName) &&
-        _deepEquals(accountName, other.accountName) &&
-        _deepEquals(accountType, other.accountType) &&
-        _deepEquals(color, other.color) &&
-        _deepEquals(isPrimary, other.isPrimary);
+    return _deepEquals(id, other.id) && _deepEquals(displayName, other.displayName) && _deepEquals(accountName, other.accountName) && _deepEquals(accountType, other.accountType) && _deepEquals(color, other.color) && _deepEquals(isPrimary, other.isPrimary);
   }
 
   @override
@@ -215,8 +209,7 @@ class CalendarEventInput {
   }
 
   Object encode() {
-    return _toList();
-  }
+    return _toList();  }
 
   static CalendarEventInput decode(Object result) {
     result as List<Object?>;
@@ -240,13 +233,7 @@ class CalendarEventInput {
     if (identical(this, other)) {
       return true;
     }
-    return _deepEquals(calendarId, other.calendarId) &&
-        _deepEquals(title, other.title) &&
-        _deepEquals(description, other.description) &&
-        _deepEquals(startMillis, other.startMillis) &&
-        _deepEquals(endMillis, other.endMillis) &&
-        _deepEquals(allDay, other.allDay) &&
-        _deepEquals(rrule, other.rrule);
+    return _deepEquals(calendarId, other.calendarId) && _deepEquals(title, other.title) && _deepEquals(description, other.description) && _deepEquals(startMillis, other.startMillis) && _deepEquals(endMillis, other.endMillis) && _deepEquals(allDay, other.allDay) && _deepEquals(rrule, other.rrule);
   }
 
   @override
@@ -259,6 +246,7 @@ class CalendarEventInput {
   }
 }
 
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -266,10 +254,10 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is DeviceCalendar) {
+    }    else if (value is DeviceCalendar) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is CalendarEventInput) {
+    }    else if (value is CalendarEventInput) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else {
@@ -295,21 +283,20 @@ class CalendarHostApi {
   /// available for dependency injection. If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   CalendarHostApi({
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) : pigeonVar_binaryMessenger = binaryMessenger,
-       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
-           ? '.$messageChannelSuffix'
-           : '';
+      BinaryMessenger? binaryMessenger, 
+      String messageChannelSuffix = '', 
+      })
+      : pigeonVar_binaryMessenger = binaryMessenger,
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
 
   final BinaryMessenger? pigeonVar_binaryMessenger;
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
+
   Future<bool> hasCalendarPermission() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.call_to_todo.CalendarHostApi.hasCalendarPermission$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.call_to_todo.CalendarHostApi.hasCalendarPermission$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -319,17 +306,17 @@ class CalendarHostApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as bool;
   }
 
   /// READ/WRITE_CALENDAR 런타임 권한 요청. 사용자가 응답하면 결과를 돌려준다.
   Future<bool> requestCalendarPermission() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.call_to_todo.CalendarHostApi.requestCalendarPermission$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.call_to_todo.CalendarHostApi.requestCalendarPermission$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -339,16 +326,16 @@ class CalendarHostApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as bool;
   }
 
   Future<List<DeviceCalendar>> listWritableCalendars() async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.call_to_todo.CalendarHostApi.listWritableCalendars$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.call_to_todo.CalendarHostApi.listWritableCalendars$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -358,32 +345,31 @@ class CalendarHostApi {
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return (pigeonVar_replyValue! as List<Object?>).cast<DeviceCalendar>();
   }
 
   /// 이벤트를 삽입하고 CalendarContract 의 event id 를 돌려준다.
   Future<String> insertEvent(CalendarEventInput event) async {
-    final pigeonVar_channelName =
-        'dev.flutter.pigeon.call_to_todo.CalendarHostApi.insertEvent$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channelName = 'dev.flutter.pigeon.call_to_todo.CalendarHostApi.insertEvent$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[event],
-    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[event]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
-      pigeonVar_replyList,
-      pigeonVar_channelName,
-      isNullValid: false,
-    );
+        pigeonVar_replyList,
+        pigeonVar_channelName,
+        isNullValid: false,
+    )
+    ;
     return pigeonVar_replyValue! as String;
   }
 }
