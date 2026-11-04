@@ -140,7 +140,8 @@ class _ResultSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final extractorLabel = switch (result.extractor) {
-      ExtractorKind.rule => '규칙 파서 (외부 전송 없음)',
+      ExtractorKind.rule when result.sentChars == 0 => '규칙 파서 (외부 전송 없음)',
+      ExtractorKind.rule => '규칙 파서 (Gemini 폴백)',
       ExtractorKind.gemini => 'Gemini',
     };
     return Card(

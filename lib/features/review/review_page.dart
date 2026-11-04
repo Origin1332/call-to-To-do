@@ -438,12 +438,14 @@ class _CalendarPicker extends ConsumerWidget {
         }
         return DropdownButtonFormField<int>(
           initialValue: effective,
+          isExpanded: true,
           decoration: const InputDecoration(labelText: '캘린더'),
           items: [
             for (final c in list)
               DropdownMenuItem(
                 value: c.id,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       width: 12,
@@ -454,7 +456,7 @@ class _CalendarPicker extends ConsumerWidget {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    Expanded(
+                    Flexible(
                       child: Text(
                         '${c.displayName} (${c.accountName})',
                         overflow: TextOverflow.ellipsis,

@@ -171,6 +171,18 @@ void main() {
       expect(single('총 10회, 매주 토요일').rrule, 'FREQ=WEEKLY;BYDAY=SA;COUNT=10');
     });
 
+    test('다음 문장의 횟수도 직전 반복에 붙는다', () {
+      expect(
+        single('매주 월수금 아침 7시 수영 등록했어. 총 12회.').rrule,
+        'FREQ=WEEKLY;BYDAY=MO,WE,FR;COUNT=12',
+      );
+    });
+
+    test('횟수/기간만 있으면 일정이 아니다', () {
+      expect(parser.parse('총 3회 통화했어', now: now), isEmpty);
+      expect(parser.parse('2주간 출장이야', now: now), isEmpty);
+    });
+
     test('N주간은 COUNT 로 환산', () {
       expect(single('4주간 매주 월수금').rrule, 'FREQ=WEEKLY;BYDAY=MO,WE,FR;COUNT=12');
     });

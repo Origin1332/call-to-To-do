@@ -161,7 +161,16 @@ class KoreanDateTimeParser {
       final tooFar = gap.trim().length > maxGroupGap;
       final conflicts = _conflicts(current, previous, token, gap);
 
-      if (crossesSentence || tooFar || conflicts) {
+      // "매주 월수금 수영. 총 12회." 처럼 횟수/기간이 다음 문장으로 넘어가도
+      // 직전 반복 일정에 붙인다.
+      final trailingModifier =
+          crossesSentence &&
+          !tooFar &&
+          !conflicts &&
+          (token is _CountToken || token is _DurationToken) &&
+          current.any((t) => t is _RecurrenceToken);
+
+      if ((crossesSentence && !trailingModifier) || tooFar || conflicts) {
         groups.add(current);
         current = [token];
       } else {
@@ -169,7 +178,14 @@ class KoreanDateTimeParser {
       }
     }
     if (current.isNotEmpty) groups.add(current);
-    return groups;
+    // 횟수/기간만 있는 그룹은 일정이 아니다 ("총 3회 통화했어").
+    return groups
+        .where(
+          (g) => g.any(
+            (t) => t is _DateToken || t is _TimeToken || t is _RecurrenceToken,
+          ),
+        )
+        .toList();
   }
 
   /// 새 토큰이 현재 그룹과 같은 일정으로 보기 어려운지 판단한다.
