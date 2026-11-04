@@ -1,6 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Gemini API 호출용. 허용 호스트는 lib/core/privacy 에서 단일 클라이언트로 강제한다. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- CalendarContract 읽기/쓰기 (런타임 요청) -->
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
+
+    <!-- 확인 팝업: 고우선순위 알림 + 전체화면 인텐트 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
     <application
-        android:label="call_to_todo"
+        android:label="Call to To-do"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -8,6 +20,8 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
