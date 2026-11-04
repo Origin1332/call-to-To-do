@@ -32,6 +32,7 @@ object CaptureEngineHolder {
 
     private const val TAG = "CaptureEngine"
     private const val ENTRYPOINT = "captureMain"
+    private const val ENTRYPOINT_LIBRARY = "package:call_to_todo/features/capture/capture_background.dart"
     private const val READY_TIMEOUT_MS = 30_000L
     private const val PROCESS_TIMEOUT_MS = 90_000L
     private const val IDLE_SHUTDOWN_MS = 3 * 60_000L
@@ -44,13 +45,16 @@ object CaptureEngineHolder {
     private var ready: CompletableDeferred<Unit>? = null
     private val idleShutdown = Runnable { shutdown() }
 
+    /** Flutter 플랫폼 채널은 메인 스레드에서만 쓸 수 있으므로 전체를 Main 으로 옮긴다. */
     suspend fun process(context: Context, message: CapturedMessage): CaptureProcessResult =
         mutex.withLock {
-            val api = withContext(Dispatchers.Main) { ensureEngine(context.applicationContext) }
-            try {
-                withTimeout(PROCESS_TIMEOUT_MS) { api.processMessage(message) }
-            } finally {
-                withContext(Dispatchers.Main) { scheduleIdleShutdown() }
+            withContext(Dispatchers.Main) {
+                val api = ensureEngine(context.applicationContext)
+                try {
+                    withTimeout(PROCESS_TIMEOUT_MS) { api.processMessage(message) }
+                } finally {
+                    scheduleIdleShutdown()
+                }
             }
         }
 
@@ -77,7 +81,7 @@ object CaptureEngineHolder {
             CaptureHostApiImpl(appContext, activity = null, onDartReady = { readySignal.complete(Unit) }),
         )
         newEngine.dartExecutor.executeDartEntrypoint(
-            DartExecutor.DartEntrypoint(loader.findAppBundlePath(), ENTRYPOINT),
+            DartExecutor.DartEntrypoint(loader.findAppBundlePath(), ENTRYPOINT_LIBRARY, ENTRYPOINT),
         )
         engine = newEngine
         val api = CaptureFlutterApi(messenger)

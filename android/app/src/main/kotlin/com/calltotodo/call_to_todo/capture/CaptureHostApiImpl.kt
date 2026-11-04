@@ -2,12 +2,14 @@ package com.calltotodo.call_to_todo.capture
 
 import android.Manifest
 import android.app.Activity
+import android.app.NotificationManager
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
@@ -110,6 +112,10 @@ class CaptureHostApiImpl(
 
         fun isNotificationListenerEnabled(context: Context): Boolean {
             val component = ComponentName(context, CaptureNotificationListenerService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                return nm.isNotificationListenerAccessGranted(component)
+            }
             return (Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") ?: "")
                 .split(':')
                 .mapNotNull { ComponentName.unflattenFromString(it) }
