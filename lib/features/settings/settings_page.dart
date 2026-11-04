@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/providers.dart';
+import '../../app/router.dart';
 import '../../core/privacy/audit_sink.dart';
 import '../../core/privacy/network_policy.dart';
 
@@ -70,6 +72,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _SectionTitle('수집 소스'),
+          ListTile(
+            leading: const Icon(Icons.forum_outlined),
+            title: const Text('메신저 알림 · SMS 수집'),
+            subtitle: const Text('소스별 on/off, 허용 앱, 알림 접근·배터리 설정, 수집 로그'),
+            trailing: const Icon(Icons.chevron_right),
+            contentPadding: EdgeInsets.zero,
+            onTap: () => context.push(AppRoutes.captureSettings),
+          ),
+          const SizedBox(height: 16),
           _SectionTitle('프라이버시'),
           SwitchListTile(
             title: const Text('외부 전송 끄기'),

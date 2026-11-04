@@ -75,9 +75,10 @@ flowchart LR
 | 네이티브 | Kotlin, AGP | 2.4.0, 9.1.0 | `kotlinx-coroutines-android` 1.10.2 (Pigeon `@async` 가 `suspend` 로 생성됨) |
 | 채널 | `pigeon` | 29.1.0 | Dart↔Kotlin 은 모두 Pigeon. 수동 MethodChannel 금지 |
 | 상태 | `flutter_riverpod` + `riverpod_annotation`/`riverpod_generator` | 3.4.3 / 4.0.7 / 4.0.9 | 모든 의존성은 `lib/app/providers.dart` 에서 조립 |
-| 라우팅 | `go_router` | 18.1.2 | `/`, `/debug/text`, `/settings`, `/review/:id` |
+| 라우팅 | `go_router` | 18.1.2 | `/`, `/debug/text`, `/settings`, `/settings/capture`, `/settings/capture/log`, `/review/:id` |
 | 모델 | `freezed` + `json_serializable` | 4.0.3 / 6.15.2 | `ScheduleCandidate` |
-| 로컬 DB | `drift` + `drift_flutter` | 2.35.3 / 0.3.1 | `candidates`, `audit_log`, `settings` |
+| 로컬 DB | `drift` + `drift_flutter` | 2.35.3 / 0.3.1 | `candidates`, `audit_log`, `settings`, `capture_log` (스키마 v2). `shareAcrossIsolates` 로 UI·백그라운드 엔진이 연결을 공유 |
+| 백그라운드 큐 | `androidx.work:work-runtime-ktx` | 2.10.5 | 수집기 → 헤드리스 Flutter 엔진 사이의 영속 큐 (3단계) |
 | 비밀 저장 | `flutter_secure_storage` | 11.2.0 | Gemini API 키만 |
 | HTTP | `http` | 1.6.0 | `PolicyHttpClient` 가 유일한 `http.Client` |
 | LLM | `google_generative_ai` | 0.4.7 | Flash 모델(기본 `gemini-2.5-flash`, 설정에서 변경), JSON 스키마 응답, `httpClient` 주입 |
@@ -92,16 +93,18 @@ flowchart LR
 ```
 docs/ARCHITECTURE.md                 # 본 문서
 pigeons/calendar_api.dart            # Pigeon 정의 (dart run pigeon --input …)
+pigeons/capture_api.dart             # Pigeon 정의: 수집 채널 (CapturedMessage, CaptureHostApi, CaptureFlutterApi)
 lib/
   main.dart                          # 설정 로드 → 알림 초기화 → 라우터
   app/                               # app(테마·로캘), router, providers(DI), home_page
   core/
     korean_datetime_parser/          # 규칙 파서 (순수 Dart, 네트워크 없음)
     privacy/                         # NetworkPolicy, PolicyHttpClient, AuditSink
-    pigeon/calendar_api.g.dart       # 생성 코드
+    pigeon/                          # 생성 코드 (calendar_api.g.dart, capture_api.g.dart)
   data/                              # drift 테이블·DB, 행↔모델 매퍼
   features/
-    capture/        (3단계 자리)      # NotificationListener·SMS·통화 종료 어댑터
+    capture/                         # 3단계: captureMain(헤드리스 진입점), CaptureService,
+                                     # MessageDeduper, CaptureSettings/Sources/Controller, 설정·로그 화면
     transcription/  (4단계 자리)      # sherpa-onnx STT·화자 구별·모델 관리
     extraction/                      # ScheduleCandidate, Prefilter, RuleExtractor,
                                      # GeminiExtractor, ExtractionService, CandidatePipeline
@@ -112,8 +115,10 @@ lib/
 android/app/src/main/kotlin/com/calltotodo/call_to_todo/
   MainActivity.kt                    # Pigeon setUp, 권한 콜백 위임
   CalendarHostApiImpl.kt             # CalendarContract 조회/삽입, 런타임 권한
-  CalendarApi.g.kt                   # 생성 코드
-test/core, test/features             # 파서·정책·프리필터·직렬화·추출 서비스
+  CalendarApi.g.kt, CaptureApi.g.kt  # 생성 코드
+  capture/                           # 3단계: NotificationListener, SMS 옵저버, Foreground Service,
+                                     # BootReceiver, WorkManager 큐, 헤드리스 엔진 홀더, CaptureHostApiImpl
+test/core, test/features             # 파서·정책·프리필터·직렬화·추출 서비스·수집(중복 제거·매핑·설정)
 .github/workflows/ci.yml
 ```
 
@@ -154,11 +159,37 @@ test/core, test/features             # 파서·정책·프리필터·직렬화·
 - Kotlin 구현은 `CALENDAR_ACCESS_LEVEL >= CONTRIBUTOR` 이고 `VISIBLE` 인 캘린더만 나열한다. 반복 이벤트는 CalendarContract 규칙대로 `DTEND` 대신 `DURATION`(`PT…S`/`P…D`) 을 쓰고, 종일 이벤트는 UTC 자정 + `EVENT_TIMEZONE=UTC` 로 저장한다. 타임존은 네이티브 기본값을 쓴다(Dart 와 같은 기기).
 - 런타임 권한은 `ActivityCompat.requestPermissions` 와 `MainActivity.onRequestPermissionsResult` 로 처리하고 코루틴으로 Dart 에 결과를 돌려준다.
 
+### 5.6 수집 소스 (`features/capture` + Kotlin `capture/`, 3단계)
+
+메신저 알림과 수신 SMS 의 텍스트를 **기기 안에서** 읽어 `CandidatePipeline.run` 에 넣는다. 원문은 어디로도 전송되지 않으며, 2절의 흐름대로 규칙 파서가 일정 표현을 찾은 경우에만 프리필터 조각이 (설정이 허용할 때) Gemini 로 나간다.
+
+| 소스 | 구현 | 읽는 것 | 읽지 않는 것 |
+| --- | --- | --- | --- |
+| 앱 알림 | `CaptureNotificationListenerService` (`NotificationListenerService`) | 허용 목록 패키지의 알림 `EXTRA_TITLE`·`EXTRA_TEXT`·`EXTRA_BIG_TEXT`, MessagingStyle 메시지(보낸 사람·본문), InboxStyle 줄, `EXTRA_CONVERSATION_TITLE`, 게시 시각 | 허용 목록 밖 패키지, 그룹 요약·진행 중(ongoing) 알림, 첨부 이미지, 액션, 자기 앱 알림 |
+| SMS | `SmsCaptureController` (`ContentObserver` on `content://sms`) | **수신함(inbox)** 에 새로 들어온 행의 `_id`·`address`·`body`·`date`. 마지막 `_id` 를 저장해 두고 그 이후 행만 읽음(첫 등록 시 현재 최대값으로 맞춰 과거 문자는 건너뜀) | 보낸 문자(sent/draft), MMS 본문, 연락처 |
+
+기본 허용 목록: 카카오톡 `com.kakao.talk`, Google 메시지 `com.google.android.apps.messaging`, 삼성 메시지 `com.samsung.android.messaging`, A. 전화(T전화) `com.skt.prod.dialer`, 기본 전화 `com.android.dialer`, 삼성 전화 `com.samsung.android.dialer`. 설정에서 패키지를 추가·삭제할 수 있다(에뮬레이터 테스트용 `com.android.shell` 등).
+
+**경로**: 수집기 → `CaptureDispatcher`(WorkManager 단일 큐, `APPEND_OR_REPLACE`) → `CaptureWorker` → `CaptureEngineHolder` 가 헤드리스 `FlutterEngine` 을 지연 생성해 `captureMain` 진입점을 실행 → Pigeon `CaptureFlutterApi.processMessage` → Dart `CaptureService`. 앱 화면이 완전히 닫혀 있어도 이 경로로 확인 알림까지 동작한다. 엔진은 3분간 메시지가 없으면 내린다. UI 엔진과 백그라운드 엔진은 drift `shareAcrossIsolates` 로 같은 DB 연결을 공유한다.
+
+**Dart `CaptureService`**: ① 설정 확인(마스터 스위치, 소스별 on/off, 허용 앱) → ② `MessageDeduper` — 본문을 줄 단위로 나눠 10분 윈도 안에서 이미 본 줄을 버리고 **새 줄만** 남긴다(카카오톡처럼 이전 메시지를 포함해 다시 게시하는 누적 알림, 같은 문자를 메시지 앱 알림과 SMS 옵저버 두 경로로 받는 경우 대응). 메모리 상태가 사라져도 `capture_log.dedupe_key` 로 한 번 더 거른다 → ③ `CandidatePipeline.run(text, sourceApp: 'kakao' | 'sms' | 'dialer')` → ④ `capture_log` 기록. 로그에는 **출처·시각·결과(후보 수·상태)·글자 수·해시만** 있고 본문 컬럼이 없다. 원문은 후보가 만들어진 경우 `candidates.source_text` 로만 남고 Review 화면에서만 보인다.
+
+**Foreground Service / 부팅**: `CaptureForegroundService` 는 `dataSync` 타입, `IMPORTANCE_MIN` 상시 알림. 하는 일은 프로세스 우선순위 유지와 SMS 옵저버 등록뿐이며, 알림 리스너는 시스템이 바인딩해 유지하므로 서비스가 꺼져도 수집은 계속된다. `BootReceiver` 는 수집이 켜져 있으면 서비스를 다시 띄운다. Android 15 제약: dataSync 서비스는 24시간 중 6시간까지만 허용되어 `onTimeout` 에서 스스로 멈추고, `BOOT_COMPLETED` 에서 dataSync 서비스를 시작할 수 없어 예외가 나면 옵저버만 등록한다. 두 경우 모두 앱을 다시 열면 `CaptureController.syncToNative` 가 서비스를 재시작한다.
+
+**설정과 권한 흐름** (`/settings/capture`): 설정의 원본은 drift `settings` 이고, 바뀔 때마다 Pigeon `setCaptureConfig` 로 네이티브 `CapturePrefs`(SharedPreferences) 에 복사된다 — 수집기가 Dart 엔진 없이도 허용 목록을 알아야 하기 때문이다.
+1. "수집 켜기" 마스터 스위치 → Foreground Service 시작·부팅 재시작 등록.
+2. **알림 접근 권한**: 런타임 권한이 아니라 시스템 설정 항목이다. "알림 접근 권한 열기" 가 `ACTION_NOTIFICATION_LISTENER_SETTINGS` 를 연다. 매니페스트의 서비스는 `BIND_NOTIFICATION_LISTENER_SERVICE` 로 보호된다.
+3. **SMS 읽기 권한**: `READ_SMS` 런타임 권한을 `requestSmsPermission`(@async) 으로 요청한다. 거부되면 SMS 옵저버만 등록되지 않고 나머지는 동작한다.
+4. **배터리 최적화 제외**: `ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`(매니페스트 `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) → 실패 시 설정 목록 화면.
+5. 시스템 설정에서 돌아오면(`AppLifecycleState.resumed`) 상태를 다시 읽어 표시한다. 수집 로그 화면(`/settings/capture/log`)은 소스·시각·후보 생성 여부만 보여 주고, 후보가 있는 항목을 탭하면 Review 로 간다.
+
+**Play 스토어 제약**: `READ_SMS` 는 기본 SMS 앱이 아니면 Play 정책상 사용이 제한되고, 알림 접근 권한도 심사에서 용도 설명이 요구된다. 이 앱은 개인 배포(사이드로드)를 전제로 하며, 스토어 배포 시 SMS 소스는 빌드에서 제외하고 알림 리스너 용도를 명시해야 한다.
+
 ## 6. 프라이버시·네트워크 정책 요약
 
-- 외부로 나가는 것: Gemini 요청(프리필터 조각 + 프롬프트)뿐. 음성·녹음 파일·알림 원문 전체·연락처는 나가지 않는다.
-- 기록되는 것: 모든 네트워크 시도의 메타데이터(`audit_log`), 후보와 그 원문(`candidates`, 기기 내부).
-- 기록되지 않는 것: 요청/응답 본문, API 키(안전 저장소에만).
+- 외부로 나가는 것: Gemini 요청(프리필터 조각 + 프롬프트)뿐. 음성·녹음 파일·알림 원문 전체·SMS 원문·연락처는 나가지 않는다.
+- 기록되는 것: 모든 네트워크 시도의 메타데이터(`audit_log`), 후보와 그 원문(`candidates`, 기기 내부), 수집 메타데이터(`capture_log`: 출처·시각·결과·글자 수·해시).
+- 기록되지 않는 것: 요청/응답 본문, API 키(안전 저장소에만), 수집 로그의 본문(컬럼 자체가 없음).
 - 꺼진 것: 분석·크래시 리포팅·광고 SDK. `pubspec.yaml` 에 해당 의존성이 없다.
 - 사용자 제어: "외부 전송 끄기" 토글, API 키 삭제(빈 값 저장), 설정 화면의 감사 로그 열람.
 
@@ -168,7 +199,7 @@ test/core, test/features             # 파서·정책·프리필터·직렬화·
 | --- | --- | --- |
 | 1 | 스캐폴드, 본 문서, CI, 네트워크 정책 레이어 | **이 PR** |
 | 2 | 코어 파이프라인: 텍스트 입력 → 규칙 파서 → (프리필터 → Gemini) → Review → CalendarContract | **이 PR** |
-| 3 | 메신저 수집: NotificationListener(카카오톡·구글 메시지·A. 전화), SMS 옵저버, Foreground Service, 허용 앱 설정 | 다음 |
+| 3 | 메신저 수집: NotificationListener(카카오톡·구글 메시지·A. 전화), SMS 옵저버, Foreground Service, 허용 앱 설정 | **구현됨** (5.6절) |
 | 4 | 통화 녹음: `TelephonyCallback` 통화 종료 감지 → `MediaStore`/`FileObserver` 녹음 스캔 → sherpa-onnx STT(SenseVoice-small 또는 Zipformer Korean) + silero VAD + 화자 구별(pyannote segmentation-3.0 + 3D-Speaker) → `CandidatePipeline.run` | 다음 |
 | 5 | 스피커폰 실시간 모드(스트리밍 STT) | 후순위 |
 | 6 | iOS 축소판(EventKit, 공유 시트) | 후순위 |
@@ -177,12 +208,14 @@ test/core, test/features             # 파서·정책·프리필터·직렬화·
 
 ## 8. 테스트와 CI
 
-- 단위 테스트: 규칙 파서(36), 네트워크 정책·감사 로그(9), 프리필터(5), 후보 직렬화·drift 매핑·CalendarContract 변환(5), 추출 서비스·Gemini 파싱(9). Gemini 경로는 `http/testing.dart` 의 `MockClient` 를 `PolicyHttpClient` 안쪽에 넣어 실제 요청 본문과 감사 로그까지 검증한다.
+- 단위 테스트: 규칙 파서(36), 네트워크 정책·감사 로그(9), 프리필터(5), 후보 직렬화·drift 매핑·CalendarContract 변환(5), 추출 서비스·Gemini 파싱(9), 수집(중복 제거 9, 메시지→파이프라인 매핑·로그 13, 설정·소스 11). Gemini 경로는 `http/testing.dart` 의 `MockClient` 를 `PolicyHttpClient` 안쪽에 넣어 실제 요청 본문과 감사 로그까지 검증한다.
 - CI(`.github/workflows/ci.yml`): `flutter pub get` → `build_runner`/`pigeon` 재생성 후 `git diff --exit-code` → `flutter analyze --fatal-infos` → `flutter test` → `flutter build apk --debug` 와 아티팩트 업로드.
 
 ## 9. 알려진 위험
 
-- `READ_SMS` 와 NotificationListener 는 Play 스토어 심사에서 제한되는 권한이다. 개인 배포(사이드로드)를 전제로 하며, 스토어 배포 시 SMS 는 제외해야 할 수 있다.
+- `READ_SMS` 와 NotificationListener 는 Play 스토어 심사에서 제한되는 권한이다. 개인 배포(사이드로드)를 전제로 하며, 스토어 배포 시 SMS 는 제외해야 할 수 있다(5.6절).
+- Android 15 의 dataSync Foreground Service 6시간 제한과 부팅 직후 시작 제한 때문에 상시 알림이 사라질 수 있다. 수집 자체는 알림 리스너 바인딩으로 계속되지만, 제조사 절전 정책이 강한 기기에서는 배터리 최적화 제외가 필요하다.
+- 메신저 알림은 앱이 보여 주기로 한 텍스트만 담는다. 긴 메시지가 잘리거나(알림 미리보기 끔) 잠금 화면 설정으로 본문이 숨겨지면 수집되지 않는다.
 - A. 전화의 녹음 저장 경로는 기기마다 달라 설정에서 사용자가 지정하도록 한다(4단계).
 - 온디바이스 한국어 STT 정확도는 클라우드보다 낮다. Review 확인 단계가 이를 보완한다.
 - 규칙 파서의 오전/오후 추정("3시" → 15시)은 휴리스틱이다. Gemini 가 켜져 있으면 문맥으로 보정되고, 꺼져 있으면 사용자가 Review 에서 고친다.

@@ -11,6 +11,16 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
 
+    <!-- 3단계 메신저/SMS 수집 (lib/features/capture, kotlin/.../capture). -->
+    <!-- 수신함 SMS 읽기 (런타임 요청). Play 스토어 배포 시 제한 권한 — 개인 배포 전제. -->
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <!-- 수집기를 살려 두는 dataSync Foreground Service 와 부팅 후 재시작 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- 설정의 "배터리 최적화 제외" 버튼이 직접 요청 대화상자를 띄우기 위해 필요 -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+
     <application
         android:label="Call to To-do"
         android:name="${applicationName}"
@@ -40,6 +50,34 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- ===== 3단계: 메신저/SMS 수집 (kotlin/.../capture) ===== -->
+        <!-- 허용 앱 알림 텍스트 수집. 시스템이 바인딩하므로 BIND_NOTIFICATION_LISTENER_SERVICE 로 보호한다. -->
+        <service
+            android:name=".capture.CaptureNotificationListenerService"
+            android:exported="true"
+            android:label="Call to To-do 일정 수집"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService"/>
+            </intent-filter>
+        </service>
+        <!-- 수집기 유지용 dataSync Foreground Service (낮은 중요도 상시 알림) -->
+        <service
+            android:name=".capture.CaptureForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"/>
+        <!-- 부팅/업데이트 후 수집이 켜져 있으면 서비스 재시작 -->
+        <receiver
+            android:name=".capture.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+        <!-- ===== /3단계 ===== -->
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

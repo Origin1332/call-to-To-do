@@ -30,6 +30,7 @@ jobs:
         run: |
           dart run build_runner build
           dart run pigeon --input pigeons/calendar_api.dart
+          dart run pigeon --input pigeons/capture_api.dart
           git diff --exit-code -- lib android/app/src/main/kotlin
 
       - run: flutter analyze --fatal-infos
